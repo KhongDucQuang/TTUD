@@ -1,0 +1,1 @@
+{"name":"Local: test","url":"/home/hyxinh/Documents/TTUD/TestGKy./test.cpp","tests":[{"id":1730736892990,"input":"2\n17868\n11640","output":"138\n14"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"/home/hyxinh/Documents/TTUD/TestGKy./test.cpp","group":"local","local":true}

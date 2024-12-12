@@ -1,0 +1,1 @@
+{"name":"Local: test","url":"/home/hyxinh/Documents/TTUD/Lab03/test.cpp","tests":[{"id":1728004968083,"input":"5\n208 750 114 184 538\n897","output":"33"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"/home/hyxinh/Documents/TTUD/Lab03/test.cpp","group":"local","local":true}

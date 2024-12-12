@@ -1,0 +1,1 @@
+{"name":"Local: 1","url":"/home/hyxinh/Documents/TTUD/ttgky/K66/1.cpp","tests":[{"id":1733509186839,"input":"12\n404 1953 94 1813 895 1526 1195 1663 1507 1173 1849 1499 \n2006\n\n","output":"4062\n\n"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"/home/hyxinh/Documents/TTUD/ttgky/K66/1.cpp","group":"local","local":true}

@@ -1,0 +1,1 @@
+{"name":"Local: SEQMX","url":"/home/hyxinh/Documents/TTUD/ttgky/2020MidTerm/SEQMX.cpp","tests":[{"id":1733680253486,"input":"8\n-2 1 -3 4 -1 2 1 -5 4\n","output":"6\n"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"/home/hyxinh/Documents/TTUD/ttgky/2020MidTerm/SEQMX.cpp","group":"local","local":true}

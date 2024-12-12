@@ -1,0 +1,1 @@
+{"name":"Local: DIGITS","url":"/home/hyxinh/Documents/TTUD/TestGKy./DIGITS.cpp","tests":[{"id":1733336243191,"input":"5\n17868\n29119\n49862\n78952\n1000002","output":"10\n0\n16\n8\n0"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"/home/hyxinh/Documents/TTUD/TestGKy./DIGITS.cpp","group":"local","local":true}
