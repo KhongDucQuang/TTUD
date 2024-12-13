@@ -1,113 +1,227 @@
-#include <iostream>
-#include <vector>
-#include <climits>
-#include <algorithm>
+#include <stdio.h>
+#define MAX 50
+#define INF 1e9
+int n,K,Q;
+int d[MAX];
+int c[MAX][MAX];
 
-using namespace std;
+int x[MAX]; // x[i] is the next point of i (i = 1,...,n), x[i] \in {0,1,...,n}
+int y[MAX];// y[k] is the start point of route k
+int x_best[MAX]; // x[i] is the next point of i (i = 1,...,n), x[i] \in {0,1,...,n}
+int y_best[MAX];// y[k] is the start point of route k
 
-int n, K, Q; // n: số lượng khách hàng, K: số lượng xe tải, Q: dung lượng xe tải
-vector<int> d;  // Mảng yêu cầu của khách hàng
-vector<vector<int>> c;  // Ma trận khoảng cách
-vector<pair<int, int>> F;  // Danh sách các cặp khách hàng không thể phục vụ cùng nhau
+int visited[MAX];// visited[i] = 1 means that client point i has been visited
+int fd[MAX];// fd[k] is the distance of kth route
+int load[MAX];// load[k] is the accumulate load of kth route
+int f;// total distance of the current solution
+int f_best;
+int segments;// number of segments accumulated
+int nbRoutes;
+int cmin;
+void inputFile(char* fi){
+    freopen(fi,"r",stdin);
+    scanf("%d%d%d",&n,&K,&Q);
+    //printf("inputFile, fi = %s, n = %d,K = %d, Q = %d\n",fi,n,K,Q);
 
-// Hàm tính tổng quãng đường di chuyển của các xe tải
-int calculateDistance(const vector<vector<int>>& routes) {
-    int totalDistance = 0;
-    for (const auto& route : routes) {
-        int routeDistance = 0;
-        for (int i = 0; i < route.size() - 1; ++i) {
-            routeDistance += c[route[i]][route[i+1]];
-        }
-        routeDistance += c[route.back()][0];  // Trở lại depot
-        totalDistance += routeDistance;
+    for(int i = 1; i <= n; i++){
+        scanf("%d",&d[i]);
     }
-    return totalDistance;
+    d[0] = 0;
+    cmin = 1e9;
+    //printf("inputFile, fi = %s, n = %d,K = %d, Q = %d\n",fi,n,K,Q);
+    for(int i = 0; i <= n; i++){
+        for(int j = 0; j <= n; j++){
+            scanf("%d",&c[i][j]);
+            if(i != j && cmin > c[i][j]) cmin = c[i][j];
+        }
+    }
+    //printf("inputFile, fi = %s, n = %d,K = %d, Q = %d\n",fi,n,K,Q);
+}
+void input(){
+    scanf("%d%d%d",&n,&K,&Q);
+    //printf("inputFile, fi = %s, n = %d,K = %d, Q = %d\n",fi,n,K,Q);
+
+    for(int i = 1; i <= n; i++){
+        scanf("%d",&d[i]);
+    }
+    d[0] = 0;
+    cmin = 1e9;
+    //printf("inputFile, fi = %s, n = %d,K = %d, Q = %d\n",fi,n,K,Q);
+    for(int i = 0; i <= n; i++){
+        for(int j = 0; j <= n; j++){
+            scanf("%d",&c[i][j]);
+            if(i != j && cmin > c[i][j]) cmin = c[i][j];
+        }
+    }
+    //printf("cmin = %d\n",cmin);
+    //printf("inputFile, fi = %s, n = %d,K = %d, Q = %d\n",fi,n,K,Q);
 }
 
-// Hàm kiểm tra nếu có xung đột giữa các khách hàng trong cùng một lộ trình
-bool checkConflicts(const vector<vector<int>>& routes) {
-    for (const auto& route : routes) {
-        for (size_t i = 0; i < route.size(); ++i) {
-            for (size_t j = i + 1; j < route.size(); ++j) {
-                if (find(F.begin(), F.end(), make_pair(route[i], route[j])) != F.end() ||
-                    find(F.begin(), F.end(), make_pair(route[j], route[i])) != F.end()) {
-                    return true;  // Có xung đột
+void solution(){
+   // printSol();
+    if(f < f_best){
+        f_best = f;
+        //memcpy(x_best,x,sizeof(x));
+        //memcpy(y_best,y,sizeof(y));
+        //printf("update best %d\n",f_best);
+    }
+}
+void printSol(){
+    int tf = 0;
+    for(int k = 1; k <= K; k++){
+        int s = y[k];
+        tf += c[0][y[k]];
+        printf("c[%d,%d] = %d, tf = %d\n ",0,y[k],c[0][y[k]],tf);
+        for(int v = s; v != 0; v = x[v]){
+            tf += c[v][x[v]];
+            printf("c[%d,%d] = %d, tf = %d\n ",v,x[v],c[v][x[v]],tf);
+        }
+    }
+    for(int k = 1; k <= K; k++){
+        int s = y[k];
+        printf("route[%d]:  0 ",k);
+        for(int v = s; v != 0; v = x[v]){
+            printf("%d ",v);
+        }
+        printf("0\n");
+    }
+    printf("f = %d\n",f);
+}
+void printBestSol(){
+    for(int k = 1; k <= K; k++){
+        int s = y_best[k];
+        printf("best route[%d]:  0 ",k);
+        for(int v = s; v != 0; v = x_best[v]){
+            printf("%d ",v);
+        }
+        printf("0\n");
+    }
+    printf("f_best = %d\n",f_best);
+}
+void printStatus(){
+    for(int i = 1; i <= n; i++) printf("%d ",x[i]); printf("\n");
+    for(int i = 1; i <= n; i++) printf("%d ",visited[i]); printf("\n");
+
+}
+int checkX(int v,int k){
+    if(v > 0 && visited[v]) return 0;
+    if(load[k] + d[v] > Q) return 0;
+    return 1;
+}
+void TRY_X(int s, int k){
+    //printf("TRY_X(%d,%d), f = %d\n",s,k,f);
+    //printStatus();
+
+    if(s == 0){
+        if(k < K)
+            TRY_X(y[k+1],k+1);
+        return;
+    }
+    for(int v = 0; v <= n; v++){
+        if(checkX(v,k)){
+            //printf("TRY_X(%d,%d), v = %d, f = %d, f_best = %d\n",s,k,v,f,f_best);
+            //printf("TRY_X(%d,%d), assign x[%d] = %d\n",s,k,s,v);
+            x[s] = v;
+            visited[v] = 1;
+            f += c[s][v];
+            load[k] += d[v];
+            segments++;
+            if(v > 0){
+                if(f + (n+nbRoutes - segments)*cmin < f_best)
+                    TRY_X(v,k);
+            }else{
+                if(k == K){
+                        if(segments == n+nbRoutes) solution();
+                }else{
+                    if(f + (n+nbRoutes - segments)*cmin < f_best)
+                        TRY_X(y[k+1],k+1);
                 }
             }
+            segments--;
+            load[k] -= d[v];
+            f -= c[s][v];
+            visited[v] = 0;
         }
     }
-    return false;
 }
-
-// Hàm quay lui để thử phân chia khách hàng vào các xe tải
-int solve(int truckCount, vector<vector<int>>& routes, vector<int>& routeLoads, vector<int>& clientAssignment) {
-    if (truckCount == K) {  // Nếu đã phân chia hết khách hàng
-        int distance = calculateDistance(routes);
-        if (checkConflicts(routes)) {
-            return -1;  // Có xung đột, trả về -1
-        }
-        return distance;
-    }
-    
-    int minDistance = INT_MAX;
-    
-    // Thử phân chia khách hàng cho các xe tải
-    for (int i = 0; i < n; ++i) {
-        if (clientAssignment[i] == -1) {  // Nếu khách hàng chưa được phân công
-            for (int truck = 0; truck < K; ++truck) {
-                if (routeLoads[truck] + d[i] <= Q) {  // Nếu xe tải có thể nhận thêm khách hàng này
-                    clientAssignment[i] = truck;
-                    routes[truck].push_back(i);
-                    routeLoads[truck] += d[i];
-                    
-                    // Tiếp tục phân chia cho khách hàng còn lại
-                    int distance = solve(truckCount + (routeLoads[truck] == d[i]), routes, routeLoads, clientAssignment);
-                    if (distance != -1) {
-                        minDistance = min(minDistance, distance);
-                    }
-                    
-                    // Quay lại trạng thái trước đó
-                    routes[truck].pop_back();
-                    routeLoads[truck] -= d[i];
-                    clientAssignment[i] = -1;
-                }
+int checkY(int v, int k){
+    if(v == 0) return 1;
+    if(load[k] + d[v] > Q) return 0;
+    return !visited[v];
+}
+void TRY_Y(int k){
+    //printf("TRY_Y(%d)\n",k);
+    //printStatus();
+    for(int v = (y[k-1]==0 ? 0 : y[k-1] + 1); v <= n; v++){
+        if(checkY(v,k)){
+            //printf("TRY_Y(%d), assign y[%d] = %d, f = %d\n",k,k,v,f);
+            y[k] = v;
+            if(v > 0) segments += 1;
+            visited[v] = 1;
+            f += c[0][v];
+            load[k] += d[v];
+            if(k < K){
+                TRY_Y(k+1);
+            }else{
+                //for(int i = 1; i <= K; i++) printf("y[%d] = %d, ",i,y[i]); printf("\n");
+                //for(int i = 1; i <= K; i++){
+                    //printf("START TRY_X(%d,%d)",y[i],i);
+                    //TRY_X(y[i],i);
+                //}
+                //segments = K;
+                nbRoutes = segments;
+                TRY_X(y[1],1);
             }
+            load[k] -= d[v];
+            f -= c[0][v];
+            visited[v] = 0;
+            if(v > 0) segments -= 1;
         }
     }
-    
-    return minDistance;
 }
-
-int main() {
-    cin >> n >> K >> Q;
-    d.resize(n);
-    c.resize(n + 1, vector<int>(n + 1));
-    
-    // Đọc yêu cầu của khách hàng
-    for (int i = 0; i < n; ++i) {
-        cin >> d[i];
+void solve(){
+    f = 0;
+    f_best = INF;
+    for(int v = 1; v <= n; v++) visited[v] = 0;
+   // printf("start TRY_Y...\n");
+    y[0] = 0;
+    TRY_Y(1);
+    //printBestSol();
+    if(f_best == INF) f_best = -1;
+    printf("%d",f_best);
+}
+/*
+void gen(char* fn, int n, int K){
+    srand(time(NULL));
+    FILE * f = fopen(fn,"w");
+   // int d[MAX];
+    int s = 0;
+    for(int i = 1; i <= n; i++){
+        d[i] = rand()%20 + 1;
+        s += d[i];
     }
-    
-    // Đọc ma trận khoảng cách
-    for (int i = 0; i <= n; ++i) {
-        for (int j = 0; j <= n; ++j) {
-            cin >> c[i][j];
+    Q = s/K + 2;
+    fprintf(f,"%d %d %d\n",n,K,Q);
+    for(int i = 1; i <= n; i++)
+        fprintf(f,"%d ",d[i]);
+    fprintf(f,"\n");
+    for(int i=0; i <= n; i++){
+        for(int j = 0; j <= n; j++){
+            int x = rand()%5+10;
+            if(i == j) x = 0;
+            fprintf(f,"%d ",x);
         }
+        fprintf(f,"\n");
     }
-    
-    int M;
-    cin >> M;
-    F.resize(M);
-    for (int i = 0; i < M; ++i) {
-        cin >> F[i].first >> F[i].second;
-    }
-    
-    vector<vector<int>> routes(K);  // Các lộ trình của các xe tải
-    vector<int> routeLoads(K, 0);  // Tải của từng xe tải
-    vector<int> clientAssignment(n, -1);  // Lưu trữ khách hàng đã được phân công cho xe tải nào
-    
-    int result = solve(0, routes, routeLoads, clientAssignment);
-    
-    cout << result << endl;
-    return 0;
+    fclose(f);
+}
+*/
+int main(){
+    //char* fi = "Test10/SHIP.INP";
+    //char* fi = "zip/SHIP1.INP";
+    //gen(fi,4,2);
+    //freopen(fi,"r",stdin);
+    //inputFile(fi);
+    input();
+    solve();
 }

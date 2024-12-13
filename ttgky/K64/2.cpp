@@ -15,10 +15,10 @@ long long countEvenSubarrays(const vector<int>& arr) {
 
         // Kiểm tra chẵn/lẻ của tổng tiền tố
         if (prefixSum % 2 == 0) {
-            count += evenCount; // Cộng số lượng tiền tố chẵn trước đó
+            count += oddCount; // Cộng số lượng tiền tố chẵn trước đó
             evenCount++;
         } else {
-            count += oddCount; // Cộng số lượng tiền tố lẻ trước đó
+            count += evenCount; // Cộng số lượng tiền tố lẻ trước đó
             oddCount++;
         }
     }
